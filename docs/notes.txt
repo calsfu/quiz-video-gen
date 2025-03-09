@@ -26,3 +26,4 @@ General notes
 - Mostly no multiple choice
 - 2 seconds
 - 1-2 seconds transition between each question
+- Solid bright color with pattern overlay  background (can change per question)
