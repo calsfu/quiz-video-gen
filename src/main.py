@@ -1,5 +1,7 @@
 # import openai
-from moviepy.editor import TextClip
+from moviepy.editor import TextClip, concatenate_videoclips
+from moviepy.config import change_settings
+change_settings({"IMAGEMAGICK_BINARY": r"C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI\\magick.exe"})
 
 # Set your OpenAI API key
 # openai.api_key = 'your-api-key'
@@ -20,8 +22,8 @@ def main():
     # topic = input("Enter quiz topic: ")
 
     # Static questions for testing
-    # questions = ["What is the capital of France? - Paris", "What is 2 + 2? - 4", "What is the largest ocean? - Pacific Ocean"]  # generate_quiz_questions(topic)
-    text = "Hello"
+    questions = ["What is the capital of France? - Paris", "What is 2 + 2? - 4", "What is the largest ocean? - Pacific Ocean"]  # generate_quiz_questions(topic)
+    # text = "Hello"
     clip = TextClip("My Holidays 2013", fontsize=70, color='white').set_position('center').set_duration(10)
 
     clips = []
@@ -30,7 +32,7 @@ def main():
     #     clips.append(create_text_clip(qa))
 
     final_video = concatenate_videoclips(clips)
-    final_video.write_videofile("quiz_video.mp4", fps=24)
+    final_video.write_videofile("videos/quiz_video.mp4", fps=24)
 
 if __name__ == "__main__":
     main()
