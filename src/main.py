@@ -1,6 +1,7 @@
 # import openai
+import numpy as np
 from PIL import Image  # Ensure this is imported for resampling
-from moviepy.editor import TextClip, ImageClip, CompositeVideoClip, ColorClip, concatenate_videoclips
+from moviepy.editor import TextClip, ImageClip, VideoClip, CompositeVideoClip, ColorClip, concatenate_videoclips
 from moviepy.config import change_settings
 from moviepy.video.tools.drawing import color_split
 change_settings({"IMAGEMAGICK_BINARY": r"C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI\\magick.exe"})
@@ -8,8 +9,8 @@ change_settings({"IMAGEMAGICK_BINARY": r"C:\\Program Files\\ImageMagick-7.1.1-Q1
 # Set your OpenAI API key
 # openai.api_key = 'your-api-key'
 
-VIDEO_WIDTH = 1280
-VIDEO_HEIGHT = 720
+VIDEO_WIDTH = 640
+VIDEO_HEIGHT = 480
 VIDEO_RESOLUTION = (VIDEO_WIDTH, VIDEO_HEIGHT)
 PADDING = 20
 
@@ -22,7 +23,21 @@ PADDING = 20
 #     )
 #     return response.choices[0].text.strip().split('\n')
 
-def create_quiz_clip(question, image_path, question_type='free_answer', duration=1):
+def make_frame(t, duration=3):
+    # Define the bar height, color, and other properties
+    bar_height = 20
+    bar_color = (255, 0, 0)  # Red bar
+    bar_width = (VIDEO_WIDTH - 2 ) * (t / duration)  # Bar width increases over time
+    
+    # Create a frame with transparent background (all zeros means transparent)
+    frame = np.ones((20, VIDEO_WIDTH, 3), dtype=np.uint8) * 255
+    
+    # Draw the red bar on the frame
+    frame[:, :int(bar_width)] = bar_color
+    
+    return frame
+
+def create_quiz_clip(question, image_path, question_type='free_answer', duration=3):
     # Create a bright-colored background
     bg_clip = ColorClip(size=VIDEO_RESOLUTION, color=(205, 0, 255)).set_duration(duration)
     
@@ -37,7 +52,7 @@ def create_quiz_clip(question, image_path, question_type='free_answer', duration
     # Add image clip with proper resampling
     image_clip = (ImageClip(image_path)
                   .set_duration(duration)
-                  .set_position('center')).resize(height=500)  # Resize image to fit the video
+                  .set_position('center')).resize(height=VIDEO_HEIGHT/3)  # Resize image to fit the video
     # white box around the image
     width, height = image_clip.size
     box = ColorClip(size=(width + PADDING * 2, height + PADDING * 2), color=(255, 255, 255))
@@ -47,8 +62,10 @@ def create_quiz_clip(question, image_path, question_type='free_answer', duration
     if question_type == 'multiple_choice':
         image_clip = image_clip.set_position(('left', 'center'))
 
+    timer_clip = VideoClip(lambda t: make_frame(t, duration=duration), duration=duration).set_position('bottom')
+
     # Composite the clips together
-    return CompositeVideoClip([bg_clip, question_clip, image_clip])
+    return CompositeVideoClip([bg_clip, question_clip, image_clip, timer_clip])
 
 def main():
     # topic = input("Enter quiz topic: ")
