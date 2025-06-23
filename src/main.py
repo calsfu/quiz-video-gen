@@ -12,7 +12,7 @@ change_settings({"IMAGEMAGICK_BINARY": r"C:\\Program Files\\ImageMagick-7.1.1-Q1
 VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 480
 VIDEO_RESOLUTION = (VIDEO_WIDTH, VIDEO_HEIGHT)
-PADDING = 20
+PADDING = 10
 
 # def generate_quiz_questions(topic, num_questions=5):
 #     prompt = f"Generate {num_questions} quiz questions with answers about {topic}."
@@ -30,24 +30,32 @@ def make_frame(t, duration=3):
     bar_width = (VIDEO_WIDTH - 2 ) * (t / duration)  # Bar width increases over time
     
     # Create a frame with transparent background (all zeros means transparent)
-    frame = np.ones((20, VIDEO_WIDTH, 3), dtype=np.uint8) * 255
+    frame = np.ones((bar_height, VIDEO_WIDTH, 3), dtype=np.uint8) * 255
     
     # Draw the red bar on the frame
     frame[:, :int(bar_width)] = bar_color
     
     return frame
 
-def create_quiz_clip(question, image_path, question_type='free_answer', duration=3):
+def create_quiz_clip(q_num, question, image_path, question_type='free_answer', duration=3):
     # Create a bright-colored background
     bg_clip = ColorClip(size=VIDEO_RESOLUTION, color=(205, 0, 255)).set_duration(duration)
     
+    # question number
+    question_num_clip = TextClip(f"{q_num}", fontsize=30, color='black', font='Arial-Bold')
+    question_num_clip = question_num_clip.set_position(('center', 'center')).set_duration(duration)
+    width, height = question_num_clip.size
+    box = ColorClip(size=(width + PADDING, height + PADDING * 2), color=(255, 255, 255))
+    question_num_clip = CompositeVideoClip([box, question_num_clip])
+    question_num_clip = question_num_clip.set_position((.05, .05), relative=True).set_duration(duration)
+
     # Create question text clip
-    question_clip = TextClip(question, fontsize=40, color='black', font='Arial-Bold')
-    # question_clip = question_clip.set_position(('center', 'top')).set_duration(duration)
+    question_clip = TextClip(question, fontsize=20, color='black', font='Arial-Bold')
+    question_clip = question_clip.set_position(('center', 'center')).set_duration(duration)
     width, height = question_clip.size
-    box = ColorClip(size=(width + PADDING * 2, height + PADDING * 2), color=(255, 255, 255))
+    box = ColorClip(size=(width + PADDING, height + PADDING * 2), color=(255, 255, 255))
     question_clip = CompositeVideoClip([box, question_clip])
-    question_clip = question_clip.set_position(('center', 'top')).set_duration(duration)
+    question_clip = question_clip.set_position(('center', .05), relative=True).set_duration(duration)
     
     # Add image clip with proper resampling
     image_clip = (ImageClip(image_path)
@@ -65,7 +73,7 @@ def create_quiz_clip(question, image_path, question_type='free_answer', duration
     timer_clip = VideoClip(lambda t: make_frame(t, duration=duration), duration=duration).set_position('bottom')
 
     # Composite the clips together
-    return CompositeVideoClip([bg_clip, question_clip, image_clip, timer_clip])
+    return CompositeVideoClip([bg_clip, question_num_clip, question_clip, image_clip, timer_clip])
 
 def main():
     # topic = input("Enter quiz topic: ")
@@ -75,8 +83,10 @@ def main():
     # text = "Hello"
 
     clips = []
-    for qa in questions:
-        clips.append(create_quiz_clip(qa, 'images/test.jpg'))
+    for i, qa in enumerate(questions):
+        clips.append(create_quiz_clip(i + 1, qa, 'images/test.jpg'))
+
+
 
     final_video = concatenate_videoclips(clips)
     final_video.write_videofile("videos/quiz_video.mp4", fps=24)
