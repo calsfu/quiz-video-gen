@@ -87,7 +87,6 @@ def main():
         clips.append(create_quiz_clip(i + 1, qa, 'images/test.jpg'))
 
 
-
     final_video = concatenate_videoclips(clips)
     final_video.write_videofile("videos/quiz_video.mp4", fps=24)
 

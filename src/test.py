@@ -1,16 +1,10 @@
-# importing editor from movie py 
-from moviepy.editor import TextClip
-from moviepy.config import change_settings
-change_settings({"IMAGEMAGICK_BINARY": r"C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI\\magick.exe"})
-# C:\Program Files\ImageMagick-7.1.1-Q16-HDRI/magick.exe
-# text
-text = "Hello"
-  
-# creating a text clip
-# having font arial-bold
-# with font size = 50
-# and color = black
-clip = TextClip(text, font ="Arial-Bold", fontsize = 50, color ="black") 
-  
-# showing  clip
-clip.ipython_display()  
+from moviepy.editor import TextClip, ColorClip, CompositeVideoClip, VideoFileClip, VideoClip
+
+clip1 = ColorClip(size=(100, 100), color=(255, 0, 0), duration=10)
+clip2 = ColorClip(size=(100, 100), color=(0, 255, 0), duration=10)
+
+clips = [clip1, clip2]
+final_clip = CompositeVideoClip(clips)
+video_clip = VideoClip("test.mp4")
+
+final_clip.write_videofile("test.mp4", fps=30)

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policymap [
+  <!ELEMENT policymap (policy)+>
+  <!ELEMENT policy (#PCDATA)>
+  <!ATTLIST policy domain (delegate|resource|coder|filter|path|policy) #IMPLIED>
+  <!ATTLIST policy name CDATA #IMPLIED>
+  <!ATTLIST policy rights CDATA #IMPLIED>
+  <!ATTLIST policy pattern CDATA #IMPLIED>
+  <!ATTLIST policy value CDATA #IMPLIED>
+]>
+<policymap>
+  <policy domain="resource" name="temporary-path" value="/tmp"/>
+  <policy domain="resource" name="disk" value="4GiB"/>
+  <policy domain="resource" name="map" value="2GiB"/>
+  <policy domain="resource" name="memory" value="1GiB"/>
+  <policy domain="resource" name="area" value="2GiB"/>
+  
+  <policy domain="path" rights="read|write" pattern="*" />
+  
+  <policy domain="coder" rights="read|write" pattern="*" />
+  
+  <policy domain="delegate" rights="read|write" pattern="*" />
+</policymap>
