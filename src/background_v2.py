@@ -12,7 +12,8 @@ DURATION = 3
 SVG_SIZE = 30
 SPEED_X = -10
 SPEED_Y = -10
-
+CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
+SVG_RENDER_SIZE = 50  
 # def lighten_color(color_hex, factor=0.2):
 #     color_hex = color_hex.lstrip('#')
 #     r, g, b = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
@@ -21,51 +22,43 @@ SPEED_Y = -10
 #     b = int(min(255, b + (255 - b) * factor))
 #     return f'#{r:02x}{g:02x}{b:02x}'
 
-def create_svg_frame(time, base_color):
-    """Returns (RGB image, mask) tuple."""
-    dwg = svgwrite.Drawing(size=(f"{VIDEO_WIDTH}px", f"{VIDEO_HEIGHT}px"))
-    # light_color = lighten_color(base_color)
+def create_pattern_from_stamp(time, stamp_image=None):
+    """
+    Creates a frame by stamping a pre-rendered image in a moving pattern.
+    Returns an RGBA numpy array.
+    """
+    png_bytes = cairosvg.svg2png(url=CUSTOM_SVG_PATH, 
+                                output_width=SVG_RENDER_SIZE, 
+                                output_height=SVG_RENDER_SIZE)
+    stamp_image = Image.open(io.BytesIO(png_bytes))
 
-    cell_size_x = SVG_SIZE * 1.5
-    cell_size_y = SVG_SIZE * 1.5
+    canvas = Image.new('RGBA', (VIDEO_WIDTH, VIDEO_HEIGHT), (0, 0, 0, 0))
 
+    cell_size_x = stamp_image.width * 1.5
+    cell_size_y = stamp_image.height * 1.5
     num_x = int(VIDEO_WIDTH / cell_size_x) + 2
     num_y = int(VIDEO_HEIGHT / cell_size_y) + 2
-
     total_offset_x = time * SPEED_X
     total_offset_y = time * SPEED_Y
 
     for i in range(num_x):
         for j in range(num_y):
-            base_x = i * cell_size_x
-            base_y = j * cell_size_y
-            cx = (base_x + total_offset_x) % (num_x * cell_size_x) - cell_size_x
-            cy = (base_y + total_offset_y) % (num_y * cell_size_y) - cell_size_y
-            dwg.add(dwg.circle(center=(cx, cy), r=SVG_SIZE / 2, fill=base_color))
+            px = int((i * cell_size_x + total_offset_x) % (num_x * cell_size_x) - cell_size_x)
+            py = int((j * cell_size_y + total_offset_y) % (num_y * cell_size_y) - cell_size_y)
+            canvas.paste(stamp_image, (px, py))
 
-    png_bytes = io.BytesIO()
-    cairosvg.svg2png(
-        bytestring=dwg.tostring().encode('utf-8'),
-        write_to=png_bytes,
-        output_width=VIDEO_WIDTH,
-        output_height=VIDEO_HEIGHT,
-        background_color='none'
-    )
-    png_bytes.seek(0)
-
-    img = Image.open(png_bytes).convert('RGBA')
-    rgba = np.array(img, dtype=np.uint8)
+    rgba = np.array(canvas, dtype=np.uint8)
     
     rgb = rgba[:, :, :3]
     alpha = rgba[:, :, 3] / 255.0  # Normalize alpha to [0, 1] for MoviePy mask
     return rgb, alpha
 
 def make_frame_rgb(t, base_color):
-    rgb, _ = create_svg_frame(t, base_color)
+    rgb, _ = create_pattern_from_stamp(t, base_color)
     return rgb
 
 def make_frame_mask(t, base_color):
-    _, alpha = create_svg_frame(t, base_color)
+    _, alpha = create_pattern_from_stamp(t, base_color)
     return alpha
 
 def to_rgb_if_needed(clip):
@@ -92,7 +85,7 @@ if __name__ == '__main__':
     moving_svg_clip = moving_svg_rgb_clip.set_mask(moving_svg_mask_clip)
 
     # Composite with transparency
-    final_clip = CompositeVideoClip([background_clip, moving_svg_clip.set_opacity(0.05)])
+    final_clip = CompositeVideoClip([background_clip, moving_svg_clip.set_opacity(0.2)])
     final_clip.write_videofile("moving_svg_background.mp4", fps=FPS)
 
     print("Generated moving_svg_background.mp4")
