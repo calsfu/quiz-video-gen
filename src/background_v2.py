@@ -4,15 +4,16 @@ from moviepy.editor import ColorClip, CompositeVideoClip, VideoClip, ImageClip
 import io
 from PIL import Image
 import cairosvg
+import math
 
 VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 480
 FPS = 15
 DURATION = 3
-SPEED_X = -30
+SPEED_X = 0
 SPEED_Y = -30
 CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
-SVG_RENDER_SIZE = 100  
+SVG_RENDER_SIZE = 50 
 # def lighten_color(color_hex, factor=0.2):
 #     color_hex = color_hex.lstrip('#')
 #     r, g, b = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
@@ -22,41 +23,40 @@ SVG_RENDER_SIZE = 100
 #     return f'#{r:02x}{g:02x}{b:02x}'
 
 # variables
+# https://www.svgrepo.com/collection/restaurant-glyphs-icons/
 svg_paths = [
-    "assets/svg/white.svg",
-    "assets/svg/pizza-svgrepo-com.svg",
-    "assets/svg/pizza-slice-svgrepo-com.svg",
+    "assets/svg/food-pizza-slice-svgrepo-com.svg",
+    "assets/svg/food-meat-beef-stake-svgrepo-com.svg",
+    "assets/svg/seafood-animal-fish-svgrepo-com.svg",
 ]
 
 def create_pattern_from_stamp(time):
     """
-    Creates a frame by stamping a pre-rendered image in a moving pattern.
-    Returns an RGBA numpy array.
+    Creates a frame by stamping a pre-rendered image in a moving,
+    rotated pattern. Returns RGB and alpha channels for MoviePy.
     """
-    # Render the SVG to a PNG
-    # png_bytes = cairosvg.svg2png(url=CUSTOM_SVG_PATH, 
-    #                             output_width=SVG_RENDER_SIZE, 
-    #                             output_height=SVG_RENDER_SIZE)
-    # stamp_image = Image.open(io.BytesIO(png_bytes))
+    # --- Stamp Rendering (same as your original code) ---
     stamp_images = []
     counter = 0
-
     for svg_path in svg_paths:
-        # Render the SVG to a PNG
         png_bytes = cairosvg.svg2png(url=svg_path, 
-                                output_width=SVG_RENDER_SIZE, 
-                                output_height=SVG_RENDER_SIZE)
+                                     output_width=SVG_RENDER_SIZE, 
+                                     output_height=SVG_RENDER_SIZE)
         stamp_image = Image.open(io.BytesIO(png_bytes))
         stamp_images.append(stamp_image)
         
-    # Create a new canvas
-    canvas = Image.new('RGBA', (VIDEO_WIDTH, VIDEO_HEIGHT), (0, 0, 0, 0))
-
-    # Calculate the cell size and number of cells
     cell_size_x = stamp_image.width
     cell_size_y = stamp_image.height 
-    num_x = int(VIDEO_WIDTH / cell_size_x) + 2
-    num_y = int(VIDEO_HEIGHT / cell_size_y) + 2
+    
+    # 1. Calculate diagonal to determine the size of a larger, temporary canvas
+    diagonal = int(math.sqrt(VIDEO_WIDTH**2 + VIDEO_HEIGHT**2))
+    
+    # Create a canvas large enough to cover the final frame after rotation
+    large_canvas = Image.new('RGBA', (diagonal, diagonal), (0, 0, 0, 0))
+
+    # 2. Tile the stamps onto this larger canvas
+    num_x = int(diagonal / cell_size_x) + 2
+    num_y = int(diagonal / cell_size_y) + 2
     total_offset_x = time * SPEED_X
     total_offset_y = time * SPEED_Y
 
@@ -65,13 +65,23 @@ def create_pattern_from_stamp(time):
         for j in range(num_y):
             px = int((i * cell_size_x + total_offset_x) % (num_x * cell_size_x) - cell_size_x)
             py = int((j * cell_size_y + total_offset_y) % (num_y * cell_size_y) - cell_size_y)
-            canvas.paste(stamp_images[counter], (px, py))
+            large_canvas.paste(stamp_images[counter], (px, py))
             counter = (counter + 1) % len(stamp_images)
 
-    rgba = np.array(canvas, dtype=np.uint8)
-    
+    # 3. Rotate the entire tiled canvas
+    rotated_canvas = large_canvas.rotate(45, resample=Image.BICUBIC, expand=False)
+
+    # 4. Crop the center of the rotated canvas to the final video size
+    left = (diagonal - VIDEO_WIDTH) / 2
+    top = (diagonal - VIDEO_HEIGHT) / 2
+    right = (diagonal + VIDEO_WIDTH) / 2
+    bottom = (diagonal + VIDEO_HEIGHT) / 2
+    final_canvas = rotated_canvas.crop((left, top, right, bottom))
+
+    # --- Conversion to NumPy array (same as your original code) ---
+    rgba = np.array(final_canvas, dtype=np.uint8)
     rgb = rgba[:, :, :3]
-    alpha = rgba[:, :, 3] / 255.0  # Normalize alpha to [0, 1] for MoviePy mask
+    alpha = rgba[:, :, 3] / 255.0
     return rgb, alpha
 
 def make_frame_rgb(t):
