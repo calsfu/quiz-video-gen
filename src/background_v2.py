@@ -7,13 +7,12 @@ import cairosvg
 
 VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 480
-FPS = 24
+FPS = 15
 DURATION = 3
-SVG_SIZE = 30
-SPEED_X = -10
-SPEED_Y = -10
+SPEED_X = -30
+SPEED_Y = -30
 CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
-SVG_RENDER_SIZE = 50  
+SVG_RENDER_SIZE = 100  
 # def lighten_color(color_hex, factor=0.2):
 #     color_hex = color_hex.lstrip('#')
 #     r, g, b = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
@@ -22,30 +21,52 @@ SVG_RENDER_SIZE = 50
 #     b = int(min(255, b + (255 - b) * factor))
 #     return f'#{r:02x}{g:02x}{b:02x}'
 
-def create_pattern_from_stamp(time, stamp_image=None):
+# variables
+svg_paths = [
+    "assets/svg/white.svg",
+    "assets/svg/pizza-svgrepo-com.svg",
+    "assets/svg/pizza-slice-svgrepo-com.svg",
+]
+
+def create_pattern_from_stamp(time):
     """
     Creates a frame by stamping a pre-rendered image in a moving pattern.
     Returns an RGBA numpy array.
     """
-    png_bytes = cairosvg.svg2png(url=CUSTOM_SVG_PATH, 
+    # Render the SVG to a PNG
+    # png_bytes = cairosvg.svg2png(url=CUSTOM_SVG_PATH, 
+    #                             output_width=SVG_RENDER_SIZE, 
+    #                             output_height=SVG_RENDER_SIZE)
+    # stamp_image = Image.open(io.BytesIO(png_bytes))
+    stamp_images = []
+    counter = 0
+
+    for svg_path in svg_paths:
+        # Render the SVG to a PNG
+        png_bytes = cairosvg.svg2png(url=svg_path, 
                                 output_width=SVG_RENDER_SIZE, 
                                 output_height=SVG_RENDER_SIZE)
-    stamp_image = Image.open(io.BytesIO(png_bytes))
-
+        stamp_image = Image.open(io.BytesIO(png_bytes))
+        stamp_images.append(stamp_image)
+        
+    # Create a new canvas
     canvas = Image.new('RGBA', (VIDEO_WIDTH, VIDEO_HEIGHT), (0, 0, 0, 0))
 
-    cell_size_x = stamp_image.width * 1.5
-    cell_size_y = stamp_image.height * 1.5
+    # Calculate the cell size and number of cells
+    cell_size_x = stamp_image.width
+    cell_size_y = stamp_image.height 
     num_x = int(VIDEO_WIDTH / cell_size_x) + 2
     num_y = int(VIDEO_HEIGHT / cell_size_y) + 2
     total_offset_x = time * SPEED_X
     total_offset_y = time * SPEED_Y
 
     for i in range(num_x):
+        counter = (counter + 1) % len(stamp_images)
         for j in range(num_y):
             px = int((i * cell_size_x + total_offset_x) % (num_x * cell_size_x) - cell_size_x)
             py = int((j * cell_size_y + total_offset_y) % (num_y * cell_size_y) - cell_size_y)
-            canvas.paste(stamp_image, (px, py))
+            canvas.paste(stamp_images[counter], (px, py))
+            counter = (counter + 1) % len(stamp_images)
 
     rgba = np.array(canvas, dtype=np.uint8)
     
@@ -53,12 +74,12 @@ def create_pattern_from_stamp(time, stamp_image=None):
     alpha = rgba[:, :, 3] / 255.0  # Normalize alpha to [0, 1] for MoviePy mask
     return rgb, alpha
 
-def make_frame_rgb(t, base_color):
-    rgb, _ = create_pattern_from_stamp(t, base_color)
+def make_frame_rgb(t):
+    rgb, _ = create_pattern_from_stamp(t)
     return rgb
 
-def make_frame_mask(t, base_color):
-    _, alpha = create_pattern_from_stamp(t, base_color)
+def make_frame_mask(t):
+    _, alpha = create_pattern_from_stamp(t)
     return alpha
 
 def to_rgb_if_needed(clip):
@@ -78,8 +99,9 @@ if __name__ == '__main__':
     background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], DURATION)
 
     # Create RGB and mask clips from separate frame functions
-    moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t, svg_color), duration=DURATION)
-    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t, svg_color), duration=DURATION).set_ismask(True)
+    moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=DURATION)
+    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=DURATION).set_ismask(True)
+     
 
     # Apply the mask to the visual clip
     moving_svg_clip = moving_svg_rgb_clip.set_mask(moving_svg_mask_clip)
