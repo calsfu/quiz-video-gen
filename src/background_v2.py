@@ -9,7 +9,6 @@ import math
 VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 480
 FPS = 15
-DURATION = 3
 SPEED_X = 0
 SPEED_Y = -30
 CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
@@ -29,6 +28,7 @@ svg_paths = [
     "assets/svg/food-meat-beef-stake-svgrepo-com.svg",
     "assets/svg/seafood-animal-fish-svgrepo-com.svg",
 ]
+background_colors = [(85, 183, 63), (137, 100, 255) ]
 
 def create_pattern_from_stamp(time):
     """
@@ -101,16 +101,23 @@ def safe_color_clip(size, color, duration):
     clip = clip.set_make_frame(lambda t: frame)
     return clip
 
+def create_background_clip(duration):
+    background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
+    moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
+    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).set_ismask(True)
+    moving_svg_clip = moving_svg_rgb_clip.set_mask(moving_svg_mask_clip)
+    return CompositeVideoClip([background_clip, moving_svg_clip.set_opacity(0.2)])
+
 if __name__ == '__main__':
     print("Creating background...")
-    background_colors = [(85, 183, 63), (137, 100, 255) ]
+    duration = 3
     svg_color = '#ffffff'  # White
 
-    background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], DURATION)
+    background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
 
     # Create RGB and mask clips from separate frame functions
-    moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=DURATION)
-    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=DURATION).set_ismask(True)
+    moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
+    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).set_ismask(True)
      
 
     # Apply the mask to the visual clip
