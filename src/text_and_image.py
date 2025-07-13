@@ -1,9 +1,10 @@
 # import openai
+from pydoc import text
 import numpy as np
 from PIL import Image  # Ensure this is imported for resampling
-from moviepy.editor import TextClip, ImageClip, VideoClip, CompositeVideoClip, ColorClip, concatenate_videoclips
-from moviepy.config import change_settings
-from moviepy.video.tools.drawing import color_split
+from moviepy import TextClip, ImageClip, VideoClip, CompositeVideoClip, ColorClip, concatenate_videoclips
+# from moviepy.config import change_settings
+# from moviepy.video.tools.drawing import color_split
 from background_v2 import create_background_clip
 
 # Set your OpenAI API key
@@ -18,7 +19,9 @@ QUESTION_FONT_COLOR = 'white'
 QUESTION_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
 NUMBER_FONT_SIZE = 30
 NUMBER_FONT_COLOR = 'white'
-NUMBER_FONT_NAME = 'Arial-Bold'
+NUMBER_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
+MAX_IMAGE_WIDTH = 100
+MAX_IMAGE_HEIGHT = 100
 
 # def generate_quiz_questions(topic, num_questions=5):
 #     prompt = f"Generate {num_questions} quiz questions with answers about {topic}."
@@ -45,38 +48,48 @@ def make_frame(t, duration=3):
 
 def create_number_clip(q_num, duration=3):
     # question number
-    question_num_clip = TextClip(f"{q_num}", fontsize=NUMBER_FONT_SIZE, color=NUMBER_FONT_COLOR, font=NUMBER_FONT_NAME)
-    question_num_clip = question_num_clip.set_position(('center', 'center')).set_duration(duration)
+    question_num_clip = TextClip(text=f"{q_num}", font_size=NUMBER_FONT_SIZE, color=NUMBER_FONT_COLOR, font=NUMBER_FONT_NAME)
+    question_num_clip = question_num_clip.with_position(('center', 'center')).with_duration(duration)
     width, height = question_num_clip.size
     # box = ColorClip(size=(width + PADDING, height + PADDING * 2), color=(255, 255, 255))
     # question_num_clip = CompositeVideoClip([box, question_num_clip])
-    question_num_clip = question_num_clip.set_position((.05, .05), relative=True).set_duration(duration)
+    question_num_clip = question_num_clip.with_position((.05, .05), relative=True).with_duration(duration)
 
     return question_num_clip
 
 def create_text_clip(question, duration=3):
     # Create question text clip
-    question_clip = TextClip(question, fontsize=QUESTION_FONT_SIZE, color=QUESTION_FONT_COLOR, font=QUESTION_FONT_NAME)
-    question_clip = question_clip.set_position(('center', 'center')).set_duration(duration)
+    question_clip = TextClip(text=question, font_size=QUESTION_FONT_SIZE, color=QUESTION_FONT_COLOR, font=QUESTION_FONT_NAME)
+    question_clip = question_clip.with_position(('center', 'center')).with_duration(duration)
     width, height = question_clip.size
     # box = ColorClip(size=(width + PADDING, height + PADDING * 2), color=(255, 255, 255))
     # question_clip = CompositeVideoClip([box, question_clip])
-    question_clip = question_clip.set_position(('center', .05), relative=True).set_duration(duration)
+    question_clip = question_clip.with_position(('center', .05), relative=True).with_duration(duration)
     
     return question_clip
+
+def create_image_clip(image_path="assets/images/test.jpg", duration=3):
+    image_clip = ImageClip(image_path)
+    image_clip = image_clip.with_position(('center', 'center')).with_duration(duration)
+    width, height = image_clip.size
+    image_clip = image_clip.with_position(('center', .05), relative=True).with_duration(duration)
+    image_clip = image_clip.resize(width=MAX_IMAGE_WIDTH, height=MAX_IMAGE_HEIGHT)
+    
+    return image_clip
     
 
 def main():
     # topic = input("Enter quiz topic: ")
 
     # Static questions for testing
-    questions = ["WAT IS THE CAPITAL OF FRANCE", "What is the capital of France? - Paris", "What is 2 + 2? - 4", "What is the largest ocean? - Pacific Ocean"]  # generate_quiz_questions(topic)
+    questions = ["WHAT IS THE CAPITAL OF FRANCE", "What is the capital of France? - Paris", "What is 2 + 2? - 4", "What is the largest ocean? - Pacific Ocean"]  # generate_quiz_questions(topic)
     # text = "Hello"
     DURATION = 1
     background_clip = create_background_clip(DURATION)
 
     number_clip = create_number_clip(1, DURATION)
     text_clip = create_text_clip(questions[0], DURATION)
+    # image_clip = create_image_clip(duration=DURATION)
 
     clips = [background_clip, number_clip, text_clip]
 

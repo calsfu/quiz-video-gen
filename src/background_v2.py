@@ -1,6 +1,6 @@
 import svgwrite
 import numpy as np
-from moviepy.editor import ColorClip, CompositeVideoClip, VideoClip, ImageClip
+from moviepy import ColorClip, CompositeVideoClip, VideoClip, ImageClip
 import io
 from PIL import Image
 import cairosvg
@@ -10,7 +10,7 @@ VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 480
 FPS = 15
 SPEED_X = 0
-SPEED_Y = -30
+SPEED_Y = -10
 CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
 SVG_RENDER_SIZE = 50 
 # def lighten_color(color_hex, factor=0.2):
@@ -102,11 +102,12 @@ def safe_color_clip(size, color, duration):
     return clip
 
 def create_background_clip(duration):
-    background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
+    # background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
+    background_clip = ColorClip(size=(VIDEO_WIDTH, VIDEO_HEIGHT), color=background_colors[0], duration=duration)
     moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
-    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).set_ismask(True)
-    moving_svg_clip = moving_svg_rgb_clip.set_mask(moving_svg_mask_clip)
-    return CompositeVideoClip([background_clip, moving_svg_clip.set_opacity(0.2)])
+    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).with_is_mask(True)
+    moving_svg_clip = moving_svg_rgb_clip.with_mask(moving_svg_mask_clip)
+    return CompositeVideoClip([background_clip, moving_svg_clip.with_opacity(0.2)])
 
 if __name__ == '__main__':
     print("Creating background...")
@@ -117,14 +118,14 @@ if __name__ == '__main__':
 
     # Create RGB and mask clips from separate frame functions
     moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
-    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).set_ismask(True)
+    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).with_is_mask(True)
      
 
     # Apply the mask to the visual clip
-    moving_svg_clip = moving_svg_rgb_clip.set_mask(moving_svg_mask_clip)
+    moving_svg_clip = moving_svg_rgb_clip.with_mask(moving_svg_mask_clip)
 
     # Composite with transparency
-    final_clip = CompositeVideoClip([background_clip, moving_svg_clip.set_opacity(0.2)])
+    final_clip = CompositeVideoClip([background_clip, moving_svg_clip.with_opacity(0.2)])
     final_clip.write_videofile("moving_svg_background.mp4", fps=FPS)
 
     print("Generated moving_svg_background.mp4")
