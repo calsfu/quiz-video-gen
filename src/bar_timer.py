@@ -1,19 +1,20 @@
 from moviepy import VideoClip, CompositeVideoClip, ColorClip
 from background_v2 import create_background_clip
 import numpy as np
+from config import VIDEO_WIDTH, VIDEO_HEIGHT, FPS
 
-VIDEO_WIDTH = 640
-VIDEO_HEIGHT = 480
-VIDEO_RESOLUTION = (VIDEO_WIDTH, VIDEO_HEIGHT)
-PADDING = 10
-QUESTION_FONT_SIZE = 30
-QUESTION_FONT_COLOR = 'white'
-QUESTION_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
-NUMBER_FONT_SIZE = 30
-NUMBER_FONT_COLOR = 'white'
-NUMBER_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
-MAX_IMAGE_WIDTH = 100
-MAX_IMAGE_HEIGHT = 100
+# VIDEO_WIDTH = 640
+# VIDEO_HEIGHT = 480
+# VIDEO_RESOLUTION = (VIDEO_WIDTH, VIDEO_HEIGHT)
+# PADDING = 10
+# QUESTION_FONT_SIZE = 30
+# QUESTION_FONT_COLOR = 'white'
+# QUESTION_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
+# NUMBER_FONT_SIZE = 30
+# NUMBER_FONT_COLOR = 'white'
+# NUMBER_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
+# MAX_IMAGE_WIDTH = 100
+# MAX_IMAGE_HEIGHT = 100
 
 def make_frame(t, duration=3):
     # Define the bar height, color, and other properties

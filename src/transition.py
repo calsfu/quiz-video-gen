@@ -5,10 +5,7 @@ from PIL import Image  # Ensure this is imported for resampling
 from moviepy import TextClip, ImageClip, VideoClip, CompositeVideoClip, ColorClip, concatenate_videoclips
 # from moviepy.config import change_settings
 # from moviepy.video.tools.drawing import color_split
-
-TRANSITION_FONT_SIZE = 30
-TRANSITION_FONT_COLOR = 'white'
-TRANSITION_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
+from config import TRANSITION_DURATION, TRANSITION_FONT_SIZE, TRANSITION_FONT_COLOR, TRANSITION_FONT_NAME
 
 def create_transition(q_num, duration=3):
     # Create question text clip

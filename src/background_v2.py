@@ -8,23 +8,7 @@ from PIL import Image
 import cairosvg
 import math
 
-VIDEO_WIDTH = 640
-VIDEO_HEIGHT = 480
-FPS = 15
-SPEED_X = 0
-SPEED_Y = -10
-CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
-SVG_RENDER_SIZE = 50 
-INNER_GRADIENT_COLOR = (255,255,255)
-OUTER_GRADIENT_COLOR = (0,0,0)
-BACKGROUND_COLOR = (85, 183, 63)
-# def lighten_color(color_hex, factor=0.2):
-#     color_hex = color_hex.lstrip('#')
-#     r, g, b = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
-#     r = int(min(255, r + (255 - r) * factor))
-#     g = int(min(255, g + (255 - g) * factor))
-#     b = int(min(255, b + (255 - b) * factor))
-#     return f'#{r:02x}{g:02x}{b:02x}'
+from config import VIDEO_WIDTH, VIDEO_HEIGHT, BACKGROUND_COLORS, FPS, SPEED_X, SPEED_Y, SVG_RENDER_SIZE
 
 # variables
 # https://www.svgrepo.com/collection/restaurant-glyphs-icons/
@@ -102,7 +86,7 @@ def to_rgb_if_needed(clip):
 
 def create_background_clip(duration):
     # background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
-    background_clip = ColorClip(size=(VIDEO_WIDTH, VIDEO_HEIGHT), color=BACKGROUND_COLOR, duration=duration).with_effects([RadialGradientBlend()])
+    background_clip = ColorClip(size=(VIDEO_WIDTH, VIDEO_HEIGHT), color=BACKGROUND_COLORS[0], duration=duration).with_effects([RadialGradientBlend()])
     # gradient_background_clip = create_radial_gradient_clip(background_clip, duration).with_opacity(0.2)
     moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
     moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).with_is_mask(True)

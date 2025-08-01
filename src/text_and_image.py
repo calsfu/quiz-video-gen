@@ -6,13 +6,10 @@ from moviepy import TextClip, ImageClip, VideoClip, CompositeVideoClip, ColorCli
 # from moviepy.config import change_settings
 # from moviepy.video.tools.drawing import color_split
 from background_v2 import create_background_clip
-
+from config import PADDING, QUESTION_FONT_SIZE, QUESTION_FONT_COLOR, QUESTION_FONT_NAME, NUMBER_FONT_SIZE, NUMBER_FONT_COLOR, NUMBER_FONT_NAME, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT
 # Set your OpenAI API key
 # openai.api_key = 'your-api-key'
 
-VIDEO_WIDTH = 640
-VIDEO_HEIGHT = 480
-VIDEO_RESOLUTION = (VIDEO_WIDTH, VIDEO_HEIGHT)
 PADDING = 10
 QUESTION_FONT_SIZE = 30
 QUESTION_FONT_COLOR = 'white'

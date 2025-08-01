@@ -5,7 +5,7 @@ from background_v2 import create_background_clip
 from text_and_image import create_text_and_image_clip, create_number_clip, create_text_clip, create_image_clip
 from bar_timer import create_bar_timer_clip
 from transition import create_transition
-
+from config import VIDEO_WIDTH, VIDEO_HEIGHT, QUESTION_DURATION, TRANSITION_DURATION  
 QUESTIONS = [
     "What is the capital of France?",
     # "What is the capital of Germany?",
@@ -13,11 +13,8 @@ QUESTIONS = [
     # "What is the capital of Spain?",
     # "What is the capital of Portugal?",
 ]
-QUESTION_DURATION = 3
-TRANSITION_DURATION = 3
+
 IMAGE_PATH = "assets/images/test.jpg"
-VIDEO_WIDTH = 640
-VIDEO_HEIGHT = 480
 
 def create_question_clip(question, q_num, image_path, duration):
     transparent_clip = create_constant_background_clip(duration)
