@@ -60,23 +60,23 @@ def create_number_clip(q_num, duration=3):
 def create_text_clip(question, duration=3):
     # Create question text clip
     question_clip = TextClip(text=question, font_size=QUESTION_FONT_SIZE, color=QUESTION_FONT_COLOR, font=QUESTION_FONT_NAME)
-    question_clip = question_clip.with_position(('center', 'center')).with_duration(duration)
-    width, height = question_clip.size
-    # box = ColorClip(size=(width + PADDING, height + PADDING * 2), color=(255, 255, 255))
-    # question_clip = CompositeVideoClip([box, question_clip])
     question_clip = question_clip.with_position(('center', .05), relative=True).with_duration(duration)
     
     return question_clip
 
 def create_image_clip(image_path="assets/images/test.jpg", duration=3):
     image_clip = ImageClip(image_path)
-    image_clip = image_clip.with_position(('center', 'center')).with_duration(duration)
-    width, height = image_clip.size
-    image_clip = image_clip.with_position(('center', .05), relative=True).with_duration(duration)
-    image_clip = image_clip.resize(width=MAX_IMAGE_WIDTH, height=MAX_IMAGE_HEIGHT)
+    image_clip = image_clip.resized(width=MAX_IMAGE_WIDTH, height=MAX_IMAGE_HEIGHT)
+    # image_clip = image_clip.with_position(('center', 'bottom'), relative=True).with_duration(duration)
+    image_clip =image_clip.with_position(('center', 'center'), relative=True).with_duration(duration)
     
     return image_clip
-    
+
+def create_text_and_image_clip(question, q_num, image_path="assets/images/test.jpg", duration=3):
+    number_clip = create_number_clip(q_num, duration)
+    text_clip = create_text_clip(question, duration)
+    image_clip = create_image_clip(image_path, duration)
+    return number_clip, text_clip, image_clip
 
 def main():
     # topic = input("Enter quiz topic: ")
@@ -89,9 +89,9 @@ def main():
 
     number_clip = create_number_clip(1, DURATION)
     text_clip = create_text_clip(questions[0], DURATION)
-    # image_clip = create_image_clip(duration=DURATION)
+    image_clip = create_image_clip(duration=DURATION)
 
-    clips = [background_clip, number_clip, text_clip]
+    clips = [background_clip, number_clip, text_clip, image_clip]
 
     final_video = CompositeVideoClip(clips)
     final_video.write_videofile("videos/quiz_video.mp4", fps=24)

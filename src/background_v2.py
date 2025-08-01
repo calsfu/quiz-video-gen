@@ -1,6 +1,8 @@
 import svgwrite
 import numpy as np
 from moviepy import ColorClip, CompositeVideoClip, VideoClip, ImageClip
+from moviepy.video.fx import MultiplyColor
+from radial_gradient import RadialGradientBlend
 import io
 from PIL import Image
 import cairosvg
@@ -13,6 +15,9 @@ SPEED_X = 0
 SPEED_Y = -10
 CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
 SVG_RENDER_SIZE = 50 
+INNER_GRADIENT_COLOR = (255,255,255)
+OUTER_GRADIENT_COLOR = (0,0,0)
+BACKGROUND_COLOR = (85, 183, 63)
 # def lighten_color(color_hex, factor=0.2):
 #     color_hex = color_hex.lstrip('#')
 #     r, g, b = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
@@ -28,7 +33,7 @@ svg_paths = [
     "assets/svg/food-meat-beef-stake-svgrepo-com.svg",
     "assets/svg/seafood-animal-fish-svgrepo-com.svg",
 ]
-background_colors = [(85, 183, 63), (137, 100, 255) ]
+
 
 def create_pattern_from_stamp(time):
     """
@@ -95,37 +100,18 @@ def make_frame_mask(t):
 def to_rgb_if_needed(clip):
     return clip.set_color([255, 255, 255]) if clip.ismask else clip
 
-def safe_color_clip(size, color, duration):
-    frame = np.ones((size[1], size[0], 3), dtype=np.uint8) * np.array(color, dtype=np.uint8)
-    clip = ColorClip(size=size, color=color, duration=duration)
-    clip = clip.set_make_frame(lambda t: frame)
-    return clip
-
 def create_background_clip(duration):
     # background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
-    background_clip = ColorClip(size=(VIDEO_WIDTH, VIDEO_HEIGHT), color=background_colors[0], duration=duration)
+    background_clip = ColorClip(size=(VIDEO_WIDTH, VIDEO_HEIGHT), color=BACKGROUND_COLOR, duration=duration).with_effects([RadialGradientBlend()])
+    # gradient_background_clip = create_radial_gradient_clip(background_clip, duration).with_opacity(0.2)
     moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
     moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).with_is_mask(True)
     moving_svg_clip = moving_svg_rgb_clip.with_mask(moving_svg_mask_clip)
     return CompositeVideoClip([background_clip, moving_svg_clip.with_opacity(0.2)])
 
-if __name__ == '__main__':
-    print("Creating background...")
-    duration = 3
-    svg_color = '#ffffff'  # White
+def main():
+    background_clip = create_background_clip(3)
+    background_clip.write_videofile("background.mp4", fps=FPS)
 
-    background_clip = safe_color_clip((VIDEO_WIDTH, VIDEO_HEIGHT), background_colors[0], duration)
-
-    # Create RGB and mask clips from separate frame functions
-    moving_svg_rgb_clip = VideoClip(lambda t: make_frame_rgb(t), duration=duration)
-    moving_svg_mask_clip = VideoClip(lambda t: make_frame_mask(t), duration=duration).with_is_mask(True)
-     
-
-    # Apply the mask to the visual clip
-    moving_svg_clip = moving_svg_rgb_clip.with_mask(moving_svg_mask_clip)
-
-    # Composite with transparency
-    final_clip = CompositeVideoClip([background_clip, moving_svg_clip.with_opacity(0.2)])
-    final_clip.write_videofile("moving_svg_background.mp4", fps=FPS)
-
-    print("Generated moving_svg_background.mp4")
+if __name__ == "__main__":
+    main()
