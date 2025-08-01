@@ -47,5 +47,8 @@ ENV IMAGEMAGICK_BINARY="/usr/bin/convert"
 COPY requirements.txt .
 RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
+# Install GIT
+RUN apt-get update && apt-get install -y git
+
 # Set the default entrypoint to an interactive shell.
 CMD ["bash"]

@@ -20,29 +20,6 @@ NUMBER_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bo
 MAX_IMAGE_WIDTH = 100
 MAX_IMAGE_HEIGHT = 100
 
-# def generate_quiz_questions(topic, num_questions=5):
-#     prompt = f"Generate {num_questions} quiz questions with answers about {topic}."
-#     response = openai.Completion.create(
-#         engine="text-davinci-003",
-#         prompt=prompt,
-#         max_tokens=500
-#     )
-#     return response.choices[0].text.strip().split('\n')
-
-def make_frame(t, duration=3):
-    # Define the bar height, color, and other properties
-    bar_height = 20
-    bar_color = (255, 0, 0)  # Red bar
-    bar_width = (VIDEO_WIDTH - 2 ) * (t / duration)  # Bar width increases over time
-    
-    # Create a frame with transparent background (all zeros means transparent)
-    frame = np.ones((bar_height, VIDEO_WIDTH, 3), dtype=np.uint8) * 255
-    
-    # Draw the red bar on the frame
-    frame[:, :int(bar_width)] = bar_color
-    
-    return frame
-
 def create_number_clip(q_num, duration=3):
     # question number
     question_num_clip = TextClip(text=f"{q_num}", font_size=NUMBER_FONT_SIZE, color=NUMBER_FONT_COLOR, font=NUMBER_FONT_NAME)

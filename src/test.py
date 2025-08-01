@@ -1,5 +1,5 @@
 import numpy as np
-from moviepy.editor import VideoClip, ColorClip
+from moviepy import VideoClip, ColorClip
 import io
 from PIL import Image
 import cairosvg
