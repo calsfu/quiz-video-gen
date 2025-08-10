@@ -6,36 +6,29 @@ from moviepy import TextClip, ImageClip, VideoClip, CompositeVideoClip, ColorCli
 # from moviepy.config import change_settings
 # from moviepy.video.tools.drawing import color_split
 from background_v2 import create_background_clip
-from config import PADDING, QUESTION_FONT_SIZE, QUESTION_FONT_COLOR, QUESTION_FONT_NAME, NUMBER_FONT_SIZE, NUMBER_FONT_COLOR, NUMBER_FONT_NAME, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT
+from config import PADDING, QUESTION_FONT_SIZE, QUESTION_FONT_COLOR, QUESTION_FONT_NAME, NUMBER_FONT_SIZE, NUMBER_FONT_COLOR, NUMBER_FONT_NAME, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, VIDEO_HEIGHT, VIDEO_WIDTH
 # Set your OpenAI API key
 # openai.api_key = 'your-api-key'
 
-PADDING = 10
-QUESTION_FONT_SIZE = 30
-QUESTION_FONT_COLOR = 'white'
-QUESTION_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
-NUMBER_FONT_SIZE = 30
-NUMBER_FONT_COLOR = 'white'
-NUMBER_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
-MAX_IMAGE_WIDTH = 100
-MAX_IMAGE_HEIGHT = 100
+
+
+def bounce_y(duration, center_y, freq=2, amplitude=50):
+    # This formula creates a sine wave bounce
+    return center_y + amplitude * np.sin(freq * np.pi * duration)
 
 def create_number_clip(q_num, duration=3):
     # question number
-    question_num_clip = TextClip(text=f"{q_num}", font_size=NUMBER_FONT_SIZE, color=NUMBER_FONT_COLOR, font=NUMBER_FONT_NAME)
-    question_num_clip = question_num_clip.with_position(('center', 'center')).with_duration(duration)
-    width, height = question_num_clip.size
-    # box = ColorClip(size=(width + PADDING, height + PADDING * 2), color=(255, 255, 255))
-    # question_num_clip = CompositeVideoClip([box, question_num_clip])
-    question_num_clip = question_num_clip.with_position((.05, .05), relative=True).with_duration(duration)
+    question_num_clip = TextClip(text=f"{q_num}", font_size=NUMBER_FONT_SIZE, color=NUMBER_FONT_COLOR, font=NUMBER_FONT_NAME).with_duration(duration)
+    question_num_clip = question_num_clip.with_position(lambda t: (VIDEO_WIDTH * .1, bounce_y(t, VIDEO_HEIGHT * .1, freq=.75, amplitude=4)))
 
     return question_num_clip
 
 def create_text_clip(question, duration=3):
     # Create question text clip
-    question_clip = TextClip(text=question, font_size=QUESTION_FONT_SIZE, color=QUESTION_FONT_COLOR, font=QUESTION_FONT_NAME)
-    question_clip = question_clip.with_position(('center', .05), relative=True).with_duration(duration)
-    
+    question_clip = TextClip(text=question, font_size=QUESTION_FONT_SIZE, color=QUESTION_FONT_COLOR, font=QUESTION_FONT_NAME).with_duration(duration)
+    question_clip = question_clip.with_position(lambda t: ('center', bounce_y(t, VIDEO_HEIGHT * .1, freq=.75, amplitude=4)))
+    # question_clip = question_clip.with_font_size(QUESTION_FONT_SIZE)
+
     return question_clip
 
 def create_image_clip(image_path="assets/images/test.jpg", duration=3):

@@ -6,9 +6,8 @@ FPS = 15
 SPEED_X = 0
 SPEED_Y = -10
 CUSTOM_SVG_PATH = "assets/svg/white.svg" # <--- The path to your SVG file
-SVG_RENDER_SIZE = 50 
+SVG_RENDER_SIZE = 60 
 BACKGROUND_COLOR = (85, 183, 63)
-SVG_RENDER_SIZE = 50
 BACKGROUND_COLORS = [(85, 183, 63)]
 
 # TEXT AND IMAGES
@@ -26,3 +25,9 @@ MAX_IMAGE_HEIGHT = 100
 TRANSITION_FONT_SIZE = 30
 TRANSITION_FONT_COLOR = 'white'
 TRANSITION_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
+
+# ANSWER
+ANSWER_FONT_SIZE = 30
+ANSWER_FONT_COLOR = 'white'
+ANSWER_FONT_NAME = 'fonts/vag-rounded-bold_gEBUv/VAG Rounded Bold/VAG Rounded Bold.ttf'
+ANSWER_DURATION = 3
