@@ -20,12 +20,14 @@ def create_question_clip(question, q_num, image_path, duration):
     transparent_clip = create_transparent_clip(duration)
     number_clip, text_clip, image_clip = create_text_and_image_clip(question, q_num, image_path, duration)
     bar_timer_clip = create_bar_timer_clip(duration)
-    return CompositeVideoClip([transparent_clip, number_clip, text_clip, image_clip, bar_timer_clip])
+    # return CompositeVideoClip([transparent_clip, number_clip, text_clip, image_clip, bar_timer_clip])
+    return number_clip, text_clip, image_clip, bar_timer_clip
 
 def create_answer_clip(answer, duration=3):
     transparent_clip = create_transparent_clip(duration)
     answer_clip = create_answer(answer, duration)
-    return CompositeVideoClip([transparent_clip, answer_clip])
+    # return CompositeVideoClip([transparent_clip, answer_clip])
+    return answer_clip
 
 def create_constant_background_clip(duration):
     background_clip = create_background_clip(duration)
@@ -38,21 +40,25 @@ def create_transparent_clip(duration):
 def main():
     clips = []
     video_duration = len(QUESTIONS) * (QUESTION_DURATION + ANSWER_DURATION)
-    background_clip = create_constant_background_clip(video_duration)
+    
     
     for idx, question in enumerate(QUESTIONS, start=1):
-        
-        question_clip = create_question_clip(question, idx, IMAGE_PATH, QUESTION_DURATION)
+        background_clip = create_constant_background_clip(video_duration)
+        question_background = background_clip.subclipped(0, 3)
+        answer_background = background_clip.subclipped(3, 6)
+        number_clip, text_clip, image_clip, bar_timer_clip = create_question_clip(question, idx, IMAGE_PATH, QUESTION_DURATION)
         answer_clip = create_answer_clip(QUESTIONS[question], ANSWER_DURATION)
 
-        
+        question_clip = CompositeVideoClip([question_background, number_clip, text_clip, image_clip, bar_timer_clip])
+        answer_clip = CompositeVideoClip([answer_background, answer_clip])
         clips.append(question_clip)
         clips.append(answer_clip)
-        
-    no_background_clips = concatenate_videoclips(clips)
-    assert background_clip.duration == no_background_clips.duration
+
+    # no_background_clips = concatenate_videoclips(clips)
+    # assert background_clip.duration == no_background_clips.duration
     
-    final_clip = CompositeVideoClip([background_clip, concatenate_videoclips(clips)])
+    # final_clip = CompositeVideoClip([background_clip, concatenate_videoclips(clips)])
+    final_clip = concatenate_videoclips(clips)
     final_clip.write_videofile("videos/quiz_video.mp4", fps=24) 
 
 
