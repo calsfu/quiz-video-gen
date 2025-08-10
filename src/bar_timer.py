@@ -7,80 +7,90 @@ from background_v2 import create_background_clip
 TRANSPARENT = (255, 255, 255, 0)
 BAR_WIDTH = int(VIDEO_WIDTH * .5)
 
-def draw_rounded_rectangle(draw, xy, radius, fill):
+def draw_rounded_rectangle_mask_with_border(width, height, radius, border_width=2):
     """
-    Draws a rounded rectangle on an ImageDraw object by combining a rectangle
-    with two circles on the ends.
+    Draws a rounded rectangle mask with a white border on a black background.
 
     Args:
-        draw (ImageDraw.ImageDraw): The ImageDraw object to draw on.
-        xy (tuple): A tuple of (x1, y1, x2, y2) defining the bounding box.
-        radius (int): The radius of the rounded ends (circles).
-        fill (any): The fill color for the shapes.
+        width: Width of the rectangle.
+        height: Height of the rectangle.
+        radius: Radius of the rounded corners.
+        border_width: Width of the white border in pixels.
+
+    Returns:
+        A numpy array representing the grayscale image (mask).
     """
-    x1, y1, x2, y2 = xy
-    
-    # Ensure the width is at least twice the radius for the circles to fit
-    if x2 - x1 < 2 * radius:
-        # If the rectangle is too narrow, just draw an ellipse
-        draw.ellipse(xy, fill=fill)
-        return
-    
-    # Draw the central rectangle portion
-    # The rectangle starts after the left circle and ends before the right one
-    rect_coords = [x1 + radius, y1, x2 - radius, y2]
-    draw.rectangle(rect_coords, fill=fill)
-    
-    # Draw the left semicircle (full circle in this case)
-    # Its bounding box is from x1 to x1 + 2*radius
-    left_circle_coords = [x1, y1, x1 + 2 * radius, y2]
-    draw.ellipse(left_circle_coords, fill=fill)
-    
-    # Draw the right semicircle (full circle in this case)
-    # Its bounding box is from x2 - 2*radius to x2
-    right_circle_coords = [x2 - 2 * radius, y1, x2, y2]
-    draw.ellipse(right_circle_coords, fill=fill)
+    # Create a new image that is completely black (for transparency).
+    img = Image.new('RGBA', (100, 20), color = (255,255,255,0))
+    draw = ImageDraw.Draw(img)
 
-def draw_rounded_rectangle_outside(draw, xy, radius, fill):
-  x1, y1, x2, y2 = xy
-  draw.rectangle([x1 + radius, y1, x2 - radius, y2], fill=fill)
-  draw.rectangle([x1, y1 + radius, x2, y2 - radius], fill=fill)
-  draw.pieslice([x1, y1, x1 + 2 * radius, y1 + 2 * radius], 180, 270, fill=fill)
-  draw.pieslice([x2 - 2 * radius, y1, x2, y1 + 2 * radius], 270, 360, fill=fill)
-  draw.pieslice([x1, y2 - 2 * radius, x1 + 2 * radius, y2], 90, 180, fill=fill)
-  draw.pieslice([x2 - 2 * radius, y2 - 2 * radius, x2, y2], 0, 90, fill=fill)
 
-def draw_rounded_rectangle_inside(draw, xy, radius, fill):
-  x1, y1, x2, y2 = xy
-  draw.rectangle([x1 + radius, y1, x2 - radius, y2], fill=fill)
-  draw.rectangle([x1, y1 + radius, x2, y2 - radius], fill=fill)
-  draw.pieslice([x1, y1, x1 + 2 * radius, y1 + 2 * radius], 180, 270, fill=fill)
-  draw.pieslice([x2 - 2 * radius, y1, x2, y1 + 2 * radius], 270, 360, fill=fill)
-  draw.pieslice([x1, y2 - 2 * radius, x1 + 2 * radius, y2], 90, 180, fill=fill)
-  draw.pieslice([x2 - 2 * radius, y2 - 2 * radius, x2, y2], 0, 90, fill=fill)
- 
+    full_bar = (0, 0, 100, 20)
+    partial_bar = (0, 0, 50, 20)
+    corner_radius = 30
+    draw.rounded_rectangle(full_bar, radius=corner_radius, fill='white')
+    draw.rounded_rectangle(partial_bar, radius=corner_radius, fill='red')
+
+    # Draw the white border (slightly larger rounded rectangle).
+    # border_radius = radius + border_width
+    # draw.rounded_rectangle(
+    #     (border_width // 2, border_width // 2, width - border_width // 2 - 1, height - border_width // 2 - 1),
+    #     fill=255,
+    #     radius=border_radius
+    # )
+    # # Draw the inner black rounded rectangle (the transparent part).
+    # draw.rounded_rectangle(
+    #     (border_width, border_width, width - border_width - 1, height - border_width - 1),
+    #     fill=255,
+    #     radius=radius
+    # )
+
+    return np.array(img)
+
+# def draw_rounded_rectangle_outside(draw, xy, radius, fill):
+#   x1, y1, x2, y2 = xy
+#   draw.rectangle([x1 + radius, y1, x2 - radius, y2], fill=fill)
+#   draw.rectangle([x1, y1 + radius, x2, y2 - radius], fill=fill)
+#   draw.pieslice([x1, y1, x1 + 2 * radius, y1 + 2 * radius], 180, 270, fill=fill)
+#   draw.pieslice([x2 - 2 * radius, y1, x2, y1 + 2 * radius], 270, 360, fill=fill)
+#   draw.pieslice([x1, y2 - 2 * radius, x1 + 2 * radius, y2], 90, 180, fill=fill)
+#   draw.pieslice([x2 - 2 * radius, y2 - 2 * radius, x2, y2], 0, 90, fill=fill)
+
+# def draw_rounded_rectangle_inside(draw, xy, radius, fill):
+#   x1, y1, x2, y2 = xy
+#   draw.rectangle([x1 + radius, y1, x2 - radius, y2], fill=fill)
+#   draw.rectangle([x1, y1 + radius, x2, y2 - radius], fill=fill)
+#   draw.pieslice([x1, y1, x1 + 2 * radius, y1 + 2 * radius], 180, 270, fill=fill)
+#   draw.pieslice([x2 - 2 * radius, y1, x2, y1 + 2 * radius], 270, 360, fill=fill)
+#   draw.pieslice([x1, y2 - 2 * radius, x1 + 2 * radius, y2], 90, 180, fill=fill)
+#   draw.pieslice([x2 - 2 * radius, y2 - 2 * radius, x2, y2], 0, 90, fill=fill)
 
 def make_bar_frame(t, duration=3, bar_height=20):
   # Create a transparent base image
   
-  img = Image.new('RGBA', (BAR_WIDTH, bar_height), (0, 0, 0, 0))
+  img = Image.new('RGBA', (BAR_WIDTH, bar_height), color = (255,255,255,0))
   draw = ImageDraw.Draw(img)
  
 
   # Bar properties
-  radius = 10
+  radius = 20
   bar_color = (255, 128, 0) # Orange color
   bg_bar_color = (255, 255, 255) # White background with full opacity
 
-  # Draw the background bar
-  draw_rounded_rectangle_outside(draw, (0, 0, BAR_WIDTH, bar_height), radius, bg_bar_color)
+  draw.rounded_rectangle((0, 0, BAR_WIDTH, bar_height), radius=radius, fill='white')
 
-#   Calculate the current width of the progress bar
-  progress_width = int(BAR_WIDTH * (t / duration))
+  #   Calculate the current width of the progress bar
+  progress_width = int(BAR_WIDTH * (1 - (t / duration)))
 
 #   Draw the progress bar
-  if progress_width > 2 * radius:
-    draw_rounded_rectangle_inside(draw, [0, 0, progress_width, bar_height], radius, fill=bar_color)
+  if progress_width >= 0:
+    draw.rounded_rectangle((0, 0, progress_width, bar_height), radius=radius, fill=bar_color)
+
+  # OLD
+#   # Draw the background bar
+#   draw_rounded_rectangle_outside(draw, (0, 0, BAR_WIDTH, bar_height), radius, bg_bar_color)
+
+
  
 
   # Convert the Pillow image to a NumPy array for MoviePy

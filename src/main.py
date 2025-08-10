@@ -6,6 +6,7 @@ from text_and_image import create_text_and_image_clip, create_number_clip, creat
 from bar_timer import create_bar_timer_clip
 from answer import create_answer
 from config import VIDEO_WIDTH, VIDEO_HEIGHT, QUESTION_DURATION, ANSWER_DURATION
+
 QUESTIONS = {
     "What is the capital of France?" : "Paris",
     # "What is the capital of Germany?" : "Berlin",
@@ -17,14 +18,12 @@ QUESTIONS = {
 IMAGE_PATH = "assets/images/test.jpg"
 
 def create_question_clip(question, q_num, image_path, duration):
-    transparent_clip = create_transparent_clip(duration)
-    number_clip, text_clip, image_clip = create_text_and_image_clip(question, q_num, image_path, duration)
+    number_clip, text_clip, text_clip_shadow, image_clip = create_text_and_image_clip(question, q_num, image_path, duration)
     bar_timer_clip = create_bar_timer_clip(duration)
     # return CompositeVideoClip([transparent_clip, number_clip, text_clip, image_clip, bar_timer_clip])
-    return number_clip, text_clip, image_clip, bar_timer_clip
+    return number_clip, text_clip, text_clip_shadow, image_clip, bar_timer_clip
 
 def create_answer_clip(answer, duration=3):
-    transparent_clip = create_transparent_clip(duration)
     answer_clip = create_answer(answer, duration)
     # return CompositeVideoClip([transparent_clip, answer_clip])
     return answer_clip
@@ -46,12 +45,12 @@ def main():
         background_clip = create_constant_background_clip(video_duration)
         question_background = background_clip.subclipped(0, 3)
         answer_background = background_clip.subclipped(3, 6)
-        number_clip, text_clip, image_clip, bar_timer_clip = create_question_clip(question, idx, IMAGE_PATH, QUESTION_DURATION)
+        number_clip, text_clip, text_clip_shadow, image_clip, bar_timer_clip = create_question_clip(question, idx, IMAGE_PATH, QUESTION_DURATION)
         answer_clip = create_answer_clip(QUESTIONS[question], ANSWER_DURATION)
 
-        question_clip = CompositeVideoClip([question_background, number_clip, text_clip, image_clip, bar_timer_clip])
+        question_clip = CompositeVideoClip([question_background, number_clip, text_clip_shadow, text_clip, image_clip, bar_timer_clip])
         answer_clip = CompositeVideoClip([answer_background, answer_clip])
-        clips.append(question_clip)
+        clips.append(question_clip) 
         clips.append(answer_clip)
 
     # no_background_clips = concatenate_videoclips(clips)
